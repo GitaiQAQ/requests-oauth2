@@ -86,7 +86,7 @@ necessary for all following requests to the API:
 
 ```python
 code = get_request_parameter("code")  # this depends on your web framework!
-data = google_auth.get_token(
+token = google_auth.get_token(
     code=code,
     grant_type="authorization_code",
 )
@@ -96,7 +96,7 @@ You can store it somewhere for later use, e.g. in the session, or in
 the database:
 
 ```python
-session["access_token"] = data["access_token"]
+session["access_token"] =token
 ```
 
 The exact method for supplying the **access token** varies from one

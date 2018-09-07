@@ -155,12 +155,13 @@ class OAuth2(object):
         else:
             params = kwargs
 
-        print("url: %s" % urljoin(self.site, url))
-        print("method: %s" % method)
-        print("headers: %s" % self.headers)
-        print("kwargs: %s" % kwargs)
-        print("data: %s" % data)
-        print("params: %s" % params)
+        if False:
+            print("url: %s" % urljoin(self.site, url))
+            print("method: %s" % method)
+            print("headers: %s" % self.headers)
+            print("kwargs: %s" % kwargs)
+            print("data: %s" % data)
+            print("params: %s" % params)
 
         response = requests.request(method, urljoin(self.site, url),
                                     params=params,

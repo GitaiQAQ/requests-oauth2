@@ -77,7 +77,9 @@ class WeChatClient(OAuth2, BaseProfile):
         return self.client_id
 
     @check_configuration("authorization_url", "redirect_uri", "client_id", "scope_sep")
-    def authorize_url(self, scope="snsapi_base,snsapi_userinfo", **kwargs):
+    def authorize_url(self, scope="snsapi_base,snsapi_userinfo", user_agent=None, **kwargs):
+        if user_agent and "MicroMessenger" in user_agent:
+            return self.wechat_connect(scope, **kwargs)
         return self.qrconnect(scope, **kwargs)
 
     @check_configuration("authorization_url", "redirect_uri", "client_id", "scope_sep")

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # Install dependencies with:
 # pip install requests_oauth2
-
-from requests_oauth2.services import WeiboClient
+from requests_oauth2.oauth2 import query_parse, jsonp_parse
+from requests_oauth2.services import WeiboClient, QQClient, WeChatClient
 
 if __name__ == '__main__':
     from pip._vendor.distlib.compat import raw_input
-    weibo_auth = WeiboClient(
-        client_id="3107116953",
-        client_secret="8fd3a091eb3bcb0657976cd0f76072b0",
-        redirect_uri="http://httpbin.org/get",
+    weibo_auth = WeChatClient(
+        client_id="wx02a105ad87680fa5",
+        client_secret="a780e68da05cafa3578b602101951858",
+        redirect_uri="http://localhost.test:8000/accounts/oauth/weixin",
     )
 
     print("Have taken already? (y/n)")
@@ -17,7 +17,6 @@ if __name__ == '__main__':
     token = None
     if select is not "y":
         authorization_url = weibo_auth.authorize_url(
-            scope=[""],
             response_type="code",
         )
         print("Authorization url: ", authorization_url)
@@ -33,13 +32,12 @@ if __name__ == '__main__':
         print("Type Token: ")
         token = raw_input()
         weibo_auth.update(access_token=token)
-
     print("Token: ", token)
 
-    data = weibo_auth.get("/2/account/get_uid.json").body
-    print("=" * 30, " Get  UID ", "=" * 30)
+    print("=" * 30, "  OpenID  ", "=" * 30)
+    data = weibo_auth.get_uid()
     [print(k, ":", v) for k, v in data.items()]
 
-    data = weibo_auth.get("/2/users/show.json", **data).body
     print("=" * 30, "   Show   ", "=" * 30)
+    data = weibo_auth.get_user_info(**data)
     [print(k, ":", v) for k, v in data.items()]

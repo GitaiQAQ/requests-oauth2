@@ -3,7 +3,7 @@ from functools import lru_cache
 
 import requests
 
-from six.moves.urllib.parse import quote, urlencode, parse_qs, urljoin
+from six.moves.urllib.parse import quote, urlencode, parse_qsl, urljoin
 
 from requests_oauth2.errors import ConfigurationError
 
@@ -44,13 +44,17 @@ def query(*attrs):
     return real_decorator
 
 
-def from_query(txt):
-    qs = parse_qs(txt)
+def query_parse(txt):
+    if type(txt) is dict:
+        return txt
+    qs = parse_qsl(txt)
     ret = dict(qs)
     return _check_expires_in(ret)
 
 
-def from_jsonp(jsonp_str, cbn="callback"):
+def jsonp_parse(jsonp_str, cbn="callback"):
+    if type(jsonp_str) is dict:
+        return jsonp_str
     _jsonp_begin = (cbn or "callback") + '('
     _jsonp_end = ');'
     jsonp_str = jsonp_str.strip()
@@ -60,7 +64,7 @@ def from_jsonp(jsonp_str, cbn="callback"):
     return json.loads(jsonp_str[len(_jsonp_begin):-len(_jsonp_end)])
 
 
-def from_text(txt):
+def text_parse(txt):
     return txt
 
 
@@ -72,6 +76,7 @@ def _check_expires_in(ret):
 
 
 class OAuth2(object):
+    debug: bool = False
     client_id: str = None
     client_secret: str = None
 
@@ -79,13 +84,13 @@ class OAuth2(object):
     expires_in: str = None
     refresh_token: str = None
 
-    _site: str = None
-    _redirect_uri: str = None
-    _authorization_url: str = '/oauth2/authorize'
-    _token_url: str = '/oauth2/token'
-    _refresh_url: str = '/oauth2/refresh'
-    _revoke_url: str = '/oauth2/revoke'
-    _scope_sep: str = ','
+    site: str = None
+    redirect_uri: str = None
+    authorization_url: str = '/oauth2/authorize'
+    token_url: str = '/oauth2/token'
+    refresh_url: str = '/oauth2/refresh'
+    revoke_url: str = '/oauth2/revoke'
+    scope_sep: str = ','
 
     _header_authorization_format: str = "Bearer %s"
 
@@ -97,39 +102,13 @@ class OAuth2(object):
 
     def update(self, **kwargs):
         for k, v in kwargs.items():
-            try:
-                if hasattr(self, k):
-                    setattr(self, k, v)
-            except:
-                setattr(self, "_" + k, v)
+            setattr(self, k, v)
 
-    @property
-    def site(self) -> str:
-        return self._site
-
-    @property
-    def redirect_uri(self) -> str:
-        return urljoin(self.site, self._redirect_uri)
-
-    @property
-    def authorization_url(self) -> str:
-        return urljoin(self.site, self._authorization_url)
-
-    @property
-    def token_url(self) -> str:
-        return urljoin(self.site, self._token_url)
-
-    @property
-    def refresh_url(self) -> str:
-        return urljoin(self.site, self._refresh_url)
-
-    @property
-    def revoke_url(self) -> str:
-        return urljoin(self.site, self._revoke_url)
-
-    @property
-    def scope_sep(self) -> str:
-        return self._scope_sep
+    def __setattr__(self, key, value):
+        if hasattr(self, "_" + key):
+            self.__dict__["_" + key] = value
+        else:
+            self.__dict__[key] = value
 
     def get_attr(self, key, **kwargs):
         return kwargs.get(key, getattr(self, key))
@@ -155,22 +134,26 @@ class OAuth2(object):
         else:
             params = kwargs
 
-        if False:
-            print("url: %s" % urljoin(self.site, url))
-            print("method: %s" % method)
-            print("headers: %s" % self.headers)
-            print("kwargs: %s" % kwargs)
-            print("data: %s" % data)
-            print("params: %s" % params)
+        if self.debug:
+            print("- url: %s" % urljoin(self.site, url))
+            print("- method: %s" % method)
+            print("- headers: %s" % self.headers)
+            print("- kwargs: %s" % kwargs)
+            print("- data: %s" % data)
+            print("- params: %s" % params)
 
         response = requests.request(method, urljoin(self.site, url),
                                     params=params,
                                     data=data,
                                     headers=self.headers,
                                     allow_redirects=True)
-        if "json" in response.headers.get("content-type"):
+
+        if self.debug:
+            print("- content-type: %s" % response.headers.get("content-type"))
+            print("- body: %s" % response.text)
+        try:
             response.body = response.json()
-        else:
+        except:
             response.body = response.text
         return response
 
@@ -192,7 +175,7 @@ class OAuth2(object):
             'scope': scope,
         }
         oauth_params.update(kwargs)
-        return "%s?%s" % (self.authorization_url,
+        return "%s?%s" % (urljoin(self.site, self.authorization_url),
                           urlencode(oauth_params))
 
     @check_configuration("token_url", )
@@ -203,6 +186,9 @@ class OAuth2(object):
         """
         if self.access_token is None:
             response = self._request("POST", self.token_url, code=code, **kwargs)
+            if type(response.body) is dict:
+                self.update(**response.body)
+            response.body = query_parse(response.body)
             if type(response.body) is dict:
                 self.update(**response.body)
         return self.access_token

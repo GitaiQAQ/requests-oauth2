@@ -1,9 +1,17 @@
+import json
 from collections import OrderedDict
 from urllib.parse import urlencode
 
 from requests_oauth2.oauth2 import query, jsonp_parse, check_configuration
 
 from requests_oauth2 import OAuth2
+
+
+class OAuth2Encoder(json.JSONEncoder):
+    def default(self, obj: OAuth2):
+        if isinstance(obj, OAuth2):
+            return obj.__dict__
+        return json.JSONEncoder.default(self, obj)
 
 
 class BaseProfile(object):
@@ -117,7 +125,7 @@ class WeChatClient(OAuth2, BaseProfile):
                           urlencode(oauth_params))
 
     def get_token(self, code, **kwargs):
-        super(WeChatClient, self).get_token(code,
+        super(WeChatClient, self).get_token(code=code,
                                             appid=self.appid,
                                             secret=self.client_secret,
                                             **kwargs)

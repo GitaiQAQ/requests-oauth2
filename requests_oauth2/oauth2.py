@@ -1,4 +1,5 @@
 import json
+import logging
 from functools import lru_cache
 
 import requests
@@ -6,6 +7,8 @@ import requests
 from six.moves.urllib.parse import quote, urlencode, parse_qsl, urljoin
 
 from requests_oauth2.errors import ConfigurationError
+
+logger = logging.getLogger("requests.oauth2")
 
 
 def check_configuration(*attrs):
@@ -28,7 +31,6 @@ def check_configuration(*attrs):
 def query(*attrs):
     """Check that each named attr has been configured
     """
-
     def real_decorator(fn, *args, **kwargs):
         def wrapped(self, *args, **kwargs):
             for attr in attrs:
@@ -76,7 +78,6 @@ def _check_expires_in(ret):
 
 
 class OAuth2(object):
-    debug: bool = False
     client_id: str = None
     client_secret: str = None
 
@@ -134,13 +135,12 @@ class OAuth2(object):
         else:
             params = kwargs
 
-        if self.debug:
-            print("- url: %s" % urljoin(self.site, url))
-            print("- method: %s" % method)
-            print("- headers: %s" % self.headers)
-            print("- kwargs: %s" % kwargs)
-            print("- data: %s" % data)
-            print("- params: %s" % params)
+        logger.debug("- url: %s" % urljoin(self.site, url))
+        logger.debug("- method: %s" % method)
+        logger.debug("- headers: %s" % self.headers)
+        logger.debug("- kwargs: %s" % kwargs)
+        logger.debug("- data: %s" % data)
+        logger.debug("- params: %s" % params)
 
         response = requests.request(method, urljoin(self.site, url),
                                     params=params,
@@ -148,9 +148,8 @@ class OAuth2(object):
                                     headers=self.headers,
                                     allow_redirects=True)
 
-        if self.debug:
-            print("- content-type: %s" % response.headers.get("content-type"))
-            print("- body: %s" % response.text)
+        logger.debug("- content-type: %s" % response.headers.get("content-type"))
+        logger.debug("- body: %s" % response.text)
         try:
             response.body = response.json()
         except:

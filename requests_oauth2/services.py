@@ -125,7 +125,7 @@ class WeChatClient(OAuth2, BaseProfile):
                           urlencode(oauth_params))
 
     def get_token(self, code, **kwargs):
-        super(WeChatClient, self).get_token(code=code,
+        return super(WeChatClient, self).get_token(code=code,
                                             appid=self.appid,
                                             secret=self.client_secret,
                                             **kwargs)
@@ -181,3 +181,9 @@ class YibanClient(OAuth2):
             raise Exception(response.body, response.url)
         return response
     # .body['info']
+
+    def get_uid(self):
+        return {"openid": self.userid}
+
+    def get_user_info(self, uid=None, **kwargs):
+        return jsonp_parse(self.get("/user/me").body["info"])

@@ -86,10 +86,10 @@ class WeChatClient(OAuth2, BaseProfile):
     # 小程序&PC 开发者工具： snsapi_login
     # 服务号： snsapi_base, snsapi_userinfo
     @check_configuration("authorization_url", "redirect_uri", "client_id", "scope_sep")
-    def authorize_url(self, scope="snsapi_base, snsapi_userinfo", user_agent=None, **kwargs):
-        if scope is "snsapi_base, snsapi_userinfo":
-            if user_agent and "miniProgram" in user_agent:
-                scope = "snsapi_login"
+    def authorize_url(self, scope="snsapi_login", user_agent=None, **kwargs):
+        # if scope is "snsapi_base, snsapi_userinfo":
+        #     if user_agent and "miniProgram" in user_agent:
+        #         scope = "snsapi_login"
 
         if user_agent and "MicroMessenger" in user_agent:
             return self.wechat_connect(scope, **kwargs)

@@ -1,10 +1,8 @@
 import json
-from collections import OrderedDict
 from urllib.parse import urlencode
 
-from requests_oauth2.oauth2 import query, jsonp_parse, check_configuration
-
 from requests_oauth2 import OAuth2
+from requests_oauth2.oauth2 import query, jsonp_parse, check_configuration
 
 
 class OAuth2Encoder(json.JSONEncoder):
@@ -84,8 +82,15 @@ class WeChatClient(OAuth2, BaseProfile):
     def appid(self):
         return self.client_id
 
+    # Scopes
+    # 小程序&PC 开发者工具： snsapi_login
+    # 服务号： snsapi_base, snsapi_userinfo
     @check_configuration("authorization_url", "redirect_uri", "client_id", "scope_sep")
-    def authorize_url(self, scope="snsapi_login", user_agent=None, **kwargs):
+    def authorize_url(self, scope="snsapi_base, snsapi_userinfo", user_agent=None, **kwargs):
+        if scope is "snsapi_base, snsapi_userinfo":
+            if user_agent and "miniProgram" in user_agent:
+                scope = "snsapi_login"
+
         if user_agent and "MicroMessenger" in user_agent:
             return self.wechat_connect(scope, **kwargs)
         return self.qrconnect(scope, **kwargs)
@@ -132,7 +137,9 @@ class WeChatClient(OAuth2, BaseProfile):
 
     @query("access_token", "appid")
     def get(self, *args, **kwargs):
-        return self._request("GET", *args, **kwargs)
+        response = self._request("GET", *args, **kwargs)
+        response.body = response.body.encode('iso-8859-1').decode('utf-8')
+        return response
 
     def _request(self, method, url, **kwargs):
         response = super(WeChatClient, self)._request(method, url, **kwargs)

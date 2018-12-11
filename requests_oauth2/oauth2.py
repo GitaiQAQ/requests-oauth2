@@ -1,10 +1,8 @@
 import json
 import logging
-from functools import lru_cache
+from urllib.parse import urlencode, parse_qsl, urljoin
 
 import requests
-
-from six.moves.urllib.parse import quote, urlencode, parse_qsl, urljoin
 
 from requests_oauth2.errors import ConfigurationError
 

@@ -12,8 +12,8 @@ if __name__ == '__main__':
     #     redirect_uri="http://localhost.test:8000/accounts/oauth/weixin",
     # )
     wechat_auth = WeChatClient(
-        client_id="wx1324609051e2ef8e",
-        client_secret="1405c15f8a512146446e8af4ba454a02",
+        client_id="wx02a105ad87680fa5",
+        client_secret="a780e68da05cafa3578b602101951858",
         redirect_uri="http://www.joblabx.com",
     )
 

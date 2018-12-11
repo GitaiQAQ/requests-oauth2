@@ -138,7 +138,9 @@ class WeChatClient(OAuth2, BaseProfile):
     @query("access_token", "appid")
     def get(self, *args, **kwargs):
         response = self._request("GET", *args, **kwargs)
-        response.body = response.body.encode('iso-8859-1').decode('utf-8')
+        for i in response.body:
+            if type(response.body[i]) is str:
+                response.body[i] = response.body[i].encode('iso-8859-1').decode('utf-8')
         return response
 
     def _request(self, method, url, **kwargs):

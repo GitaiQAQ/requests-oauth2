@@ -193,9 +193,11 @@ class YibanClient(OAuth2):
 
     def get_uid(self):
         # openid
+        if not hasattr(self, "userid"):
+            self.userid = self.get_user_info()["yb_userid"]
         return {"openid": self.userid}
 
-    def get_user_info(self, uid=None, **kwargs):
+    def get_user_info(self, **kwargs):
         # yb_userid, yb_username, yb_usernick, yb_sex, yb_money, yb_exp, yb_userhead, yb_schoolid, yb_schoolname,
         # yb_regtime
         return jsonp_parse(self.get("/user/me").body["info"])

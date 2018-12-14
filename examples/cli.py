@@ -11,10 +11,15 @@ if __name__ == '__main__':
     #     client_secret="a780e68da05cafa3578b602101951858",
     #     redirect_uri="http://localhost.test:8000/accounts/oauth/weixin",
     # )
-    wechat_auth = WeChatClient(
-        client_id="wx02a105ad87680fa5",
-        client_secret="a780e68da05cafa3578b602101951858",
-        redirect_uri="http://www.joblabx.com",
+    # wechat_auth = WeChatClient(
+    #     client_id="wx02a105ad87680fa5",
+    #     client_secret="a780e68da05cafa3578b602101951858",
+    #     redirect_uri="http://www.joblabx.com",
+    # )
+    wechat_auth = YibanClient(
+        client_id="e7c07edf7fa39a0e",
+        client_secret="d7b078b7bdbdd337ede83951c0cda372",
+        redirect_uri="https://m.joblabx.com/accounts/oauth/yiban",
     )
 
     print("Have taken already? (y/n)")

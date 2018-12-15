@@ -159,7 +159,7 @@ class OAuth2(object):
         return self._request("GET", *args, **kwargs)
 
     @check_configuration("authorization_url", "redirect_uri", "client_id", "scope_sep")
-    def authorize_url(self, scope='', **kwargs):
+    def authorize_url(self, scope='', redirect=None, **kwargs):
         """
         Returns the url to redirect the user to for user consent
         """
@@ -170,6 +170,7 @@ class OAuth2(object):
             'redirect_uri': self.redirect_uri,
             'client_id': self.client_id,
             'scope': scope,
+            'state': redirect
         }
         oauth_params.update(kwargs)
         return "%s?%s" % (urljoin(self.site, self.authorization_url),

@@ -96,7 +96,7 @@ class WeChatClient(OAuth2, BaseProfile):
         return self.qrconnect(scope, **kwargs)
 
     @check_configuration("authorization_url", "redirect_uri", "client_id", "scope_sep")
-    def qrconnect(self, scope, **kwargs):
+    def qrconnect(self, scope, redirect=None, **kwargs):
         """
         微信扫码登录，需要开通相关服务
         """
@@ -106,14 +106,15 @@ class WeChatClient(OAuth2, BaseProfile):
             'appid': self.appid,
             'redirect_uri': self.redirect_uri,
             'response_type': "code",
-            'scope': scope
+            'scope': scope,
+            'state': redirect
         }
         oauth_params.update(kwargs)
         return "%s?%s" % (self.qrconnect_url,
                           urlencode(oauth_params))
 
     @check_configuration("authorization_url", "redirect_uri", "client_id", "scope_sep")
-    def wechat_connect(self, scope, **kwargs):
+    def wechat_connect(self, scope, redirect=None, **kwargs):
         """
         微信内部登陆
         """
@@ -123,7 +124,8 @@ class WeChatClient(OAuth2, BaseProfile):
             'appid': self.appid,
             'redirect_uri': self.redirect_uri,
             'response_type': "code",
-            'scope': scope
+            'scope': scope,
+            'state': redirect
         }
         oauth_params.update(kwargs)
         return "%s?%s" % (self.authorization_url,
@@ -186,8 +188,8 @@ class YibanClient(OAuth2):
 
     def _request(self, method, url, **kwargs):
         response = super(YibanClient, self)._request(method, url, **kwargs)
-        if "status" in response.body and response.body['status'] is 'error':
-            raise Exception(response.body, response.url)
+        if "status" in response.body and response.body['status'] == 'error':
+            raise Exception(response.body["info"], response.url)
         return response
     # .body['info']
 

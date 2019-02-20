@@ -2,6 +2,7 @@ import json
 from urllib.parse import urlencode
 
 from requests_oauth2 import OAuth2
+from requests_oauth2.errors import QQError, WeChatError, WeiboError, YibanError
 from requests_oauth2.oauth2 import query, jsonp_parse, check_configuration
 
 
@@ -58,9 +59,9 @@ class QQClient(OAuth2, BaseProfile):
     def _request(self, method, url, **kwargs):
         response = super(QQClient, self)._request(method, url, **kwargs)
         if "code" in response.body:
-            raise Exception(response.body, response.url)
+            raise QQError(response.url, **response.body)
         if "ret" in response.body and response.body.get("ret") < 0:
-            raise Exception(response.body, response.url)
+            raise QQError(response.url, **response.body)
         return response
 
     def get_uid(self):
@@ -133,9 +134,9 @@ class WeChatClient(OAuth2, BaseProfile):
 
     def get_token(self, code, **kwargs):
         return super(WeChatClient, self).get_token(code=code,
-                                            appid=self.appid,
-                                            secret=self.client_secret,
-                                            **kwargs)
+                                                   appid=self.appid,
+                                                   secret=self.client_secret,
+                                                   **kwargs)
 
     @query("access_token", "appid")
     def get(self, *args, **kwargs):
@@ -148,9 +149,9 @@ class WeChatClient(OAuth2, BaseProfile):
     def _request(self, method, url, **kwargs):
         response = super(WeChatClient, self)._request(method, url, **kwargs)
         if "code" in response.body:
-            raise Exception(response.body, response.url)
+            raise WeChatError(response.url, **response.body)
         if "ret" in response.body and response.body.get("ret") < 0:
-            raise Exception(response.body, response.url)
+            raise WeChatError(response.url, **response.body)
         return response
 
     def get_uid(self):
@@ -170,7 +171,7 @@ class WeiboClient(OAuth2):
     def _request(self, method, url, **kwargs):
         response = super(WeiboClient, self)._request(method, url, **kwargs)
         if "error" in response.body:
-            raise Exception(response.body)
+            raise WeiboError(url, **response.body)
         return response
 
     def get_uid(self):
@@ -189,8 +190,9 @@ class YibanClient(OAuth2):
     def _request(self, method, url, **kwargs):
         response = super(YibanClient, self)._request(method, url, **kwargs)
         if "status" in response.body and response.body['status'] == 'error':
-            raise Exception(response.body["info"], response.url)
+            raise YibanError(response.url, **response.body["info"])
         return response
+
     # .body['info']
 
     def get_uid(self):

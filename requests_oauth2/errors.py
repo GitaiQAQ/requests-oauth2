@@ -3,7 +3,8 @@ class OAuth2Error(Exception):
 
 
 class ConfigurationError(OAuth2Error):
-    pass
+    def __init__(self, *args):
+        super(ConfigurationError, self).__init__("c001", *args)
 
 
 class ServicesError(OAuth2Error):
